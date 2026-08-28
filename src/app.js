@@ -22,14 +22,8 @@ const states = [
 const demoProfiles = {
   explorer: {
     role: "explorer",
-    title: "Explorer Demo",
-    email: "explorer@artlens.demo",
-    nav: ["Home", "Discover", "Creators", "Events", "Saved", "Profile"]
-  },
-  customer: {
-    role: "customer",
-    title: "Customer Demo",
-    email: "customer@artlens.demo",
+    title: "Explorer / Customer Demo",
+    email: "explorer-customer@artlens.demo",
     nav: ["Home", "Discover", "Creators", "Events", "Saved", "Profile"]
   },
   creator: {
@@ -130,18 +124,12 @@ function renderRoleSelection() {
         <h1>Welcome to ART-LENS</h1>
         <p>Discover culture. Meet creators. Keep traditions alive.</p>
       </section>
-      <section class="role-grid" aria-label="Choose how to continue">
+      <section class="role-grid two-role-grid" aria-label="Choose how to continue">
         <button class="role-card explorer-card" data-select-role="explorer">
           <span class="role-icon">⌕</span>
-          <small>For cultural discovery</small>
-          <strong>Explore as a User</strong>
-          <p>Discover traditions, artisans, artworks, events, and cultural locations.</p>
-        </button>
-        <button class="role-card customer-card" data-select-role="customer">
-          <span class="role-icon">₹</span>
-          <small>For cultural support</small>
-          <strong>Continue as a Customer</strong>
-          <p>Follow creators, save works, attend events, and support artisans through demo flows.</p>
+          <small>Explorer / Customer</small>
+          <strong>Explore and Support Culture</strong>
+          <p>Discover traditions, artisans, artworks, events, cultural locations, saved items, and demo support flows.</p>
         </button>
         <button class="role-card creator-card" data-select-role="creator">
           <span class="role-icon">✺</span>
@@ -191,7 +179,7 @@ function renderRegionSelection() {
       </div>
       <div class="state-grid">
         ${states.map((item) => `
-          <button class="state-card ${item.status}" data-state="${item.name}">
+          <button class="state-card ${item.status}" data-region-state="${item.name}">
             <span>${item.status === "active" ? "Active" : "Coming soon"}</span>
             <strong>${item.name}</strong>
             <p>${item.summary}</p>
@@ -363,16 +351,38 @@ function renderDiscover() {
         <p>Gujarat is active. Other states are visible but intentionally limited until sourced data is available.</p>
       </div>
       <div class="discover-layout">
-        <div class="india-map" aria-label="India cultural map">
-          ${states.map((item, index) => `<button class="state-node ${item.status}" style="--x:${18 + index * 12}%;--y:${28 + (index % 3) * 18}%;" data-state="${item.name}">${item.name}</button>`).join("")}
+        <div class="india-map real-map" aria-label="Full India cultural map">
+          <img class="india-map-image" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Political%20map%20of%20India.svg" alt="Political map of India showing Indian states" />
+          <button class="gujarat-hotspot" data-map-state="Gujarat" aria-label="Open Gujarat cultural network">
+            <span>Gujarat</span>
+          </button>
+          ${states.filter((item) => item.name !== "Gujarat").map((item, index) => `<button class="state-node ${item.status}" style="--x:${62 + (index % 2) * 20}%;--y:${18 + index * 13}%;" data-map-state="${item.name}">${item.name}<small>Coming soon</small></button>`).join("")}
           ${data.mapMarkers.map((marker) => `<button class="culture-marker ${marker.kind}" style="--x:${marker.x}%;--y:${marker.y}%;" data-marker="${marker.id}"><span>${marker.kind}</span>${marker.label}</button>`).join("")}
         </div>
         <aside class="side-panel" id="mapInfo">
-          ${renderMarkerInfo(data.mapMarkers[0])}
+          ${renderGujaratInfo()}
         </aside>
       </div>
     </main>
   `, "Discover");
+}
+
+function renderGujaratInfo() {
+  return `
+    <div class="badges"><span class="badge source_backed">Gujarat Active</span><span class="badge demo">Demo slice</span></div>
+    <h3>Gujarat arts and artisans</h3>
+    <p>Current complete demo region: Kutch. Explore source-aware crafts, demo creators, cultural works, events, workshops, and support actions.</p>
+    <div class="map-summary-grid">
+      <div><strong>${data.traditions.length}</strong><span>Arts and traditions</span></div>
+      <div><strong>${data.creators.length}</strong><span>Demo artisans</span></div>
+      <div><strong>${data.artworks.length}</strong><span>Cultural works</span></div>
+      <div><strong>${data.events.length}</strong><span>Events</span></div>
+    </div>
+    <h4>Arts</h4>
+    <div class="pill-row">${data.traditions.map((item) => `<button data-open="tradition:${item.id}">${item.name}</button>`).join("")}</div>
+    <h4>Artisans</h4>
+    <div class="pill-row">${data.creators.map((item) => `<button data-open="creator:${item.id}">${item.name}</button>`).join("")}</div>
+  `;
 }
 
 function renderCreatorStudio(active = "My Art") {
@@ -662,7 +672,8 @@ document.body.addEventListener("click", (event) => {
   const logout = event.target.closest("[data-logout]");
   const createDemo = event.target.closest("[data-create-demo]");
   const nav = event.target.closest("[data-nav]")?.dataset.nav;
-  const selectedState = event.target.closest("[data-state]")?.dataset.state;
+  const selectedState = event.target.closest("[data-region-state]")?.dataset.regionState;
+  const mapState = event.target.closest("[data-map-state]")?.dataset.mapState;
   const open = event.target.closest("[data-open]")?.dataset.open;
   const site = event.target.closest("[data-site]")?.dataset.site;
   const markerId = event.target.closest("[data-marker]")?.dataset.marker;
@@ -693,6 +704,17 @@ document.body.addEventListener("click", (event) => {
     else {
       dialogBody.innerHTML = `<h2>${selectedState}</h2><p class="lead">ART-LENS is coming soon to this region.</p><p>No cultural data has been fabricated for this state.</p>`;
       dialog.showModal();
+    }
+  }
+  if (mapState) {
+    if (mapState === "Gujarat") {
+      const panel = document.querySelector("#mapInfo");
+      if (panel) panel.innerHTML = renderGujaratInfo();
+    } else {
+      const panel = document.querySelector("#mapInfo");
+      if (panel) {
+        panel.innerHTML = `<div class="badges"><span class="badge unverified">Coming Soon</span></div><h3>${mapState}</h3><p>Data for this region is coming soon.</p><p>No cultural records have been fabricated for this state.</p>`;
+      }
     }
   }
   if (open) openEntity(open);
