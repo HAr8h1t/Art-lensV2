@@ -41,6 +41,7 @@ export function relationshipBundle(type, id) {
     tradition: ["traditions", "traditionIds"],
     creator: ["creators", "creatorIds"],
     artwork: ["artworks", "artworkIds"],
+    product: ["products", "productIds"],
     event: ["events", "eventIds"],
     workshop: ["workshops", "workshopIds"],
     site: ["sites", "siteIds"]

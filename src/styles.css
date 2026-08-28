@@ -958,6 +958,47 @@ h2 {
   gap: 14px;
 }
 
+.studio-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 18px;
+}
+
+.studio-form,
+.draft-preview {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--soft-shadow);
+  padding: 22px;
+}
+
+.studio-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.studio-form label {
+  display: grid;
+  gap: 7px;
+  font-weight: 800;
+}
+
+.studio-form label:nth-child(4),
+.studio-form label:nth-child(5),
+.studio-form .card-actions {
+  grid-column: 1 / -1;
+}
+
+.studio-form input,
+.studio-form select,
+.studio-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: white;
+  padding: 12px 13px;
+}
+
 .warning {
   padding: 12px;
   border: 1px solid #e4c1b9;
@@ -982,6 +1023,7 @@ h2 {
   .search div,
   .discover-layout,
   .two-column,
+  .studio-layout,
   .creator-dashboard .dashboard-hero {
     display: block;
   }
@@ -994,6 +1036,10 @@ h2 {
   }
 
   .role-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-form {
     grid-template-columns: 1fr;
   }
 

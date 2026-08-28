@@ -123,6 +123,25 @@ export const data = {
       sourceIds: []
     }
   ],
+  products: [
+    {
+      id: "product-rogan-panel-demo",
+      title: "Demo Support Work: Rogan Cloth Panel",
+      creatorId: "creator-khatri-demo",
+      artworkId: "work-tree-life-demo",
+      traditionIds: ["trad-rogan"],
+      regionId: "region-kutch",
+      price: "Demo inquiry only",
+      availability: "Available for support inquiry",
+      views: 860,
+      likes: 124,
+      supportInterest: 31,
+      description: "A demo product-style support record that keeps cultural context connected to the artwork and tradition.",
+      verification: "community_submitted",
+      isDemo: true,
+      sourceIds: ["src-gujarat-nirona"]
+    }
+  ],
   sites: [
     {
       id: "site-nirona",

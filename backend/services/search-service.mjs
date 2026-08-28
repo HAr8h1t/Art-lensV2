@@ -6,6 +6,7 @@ function records() {
     ...data.traditions.map((item) => ({ type: "tradition", item })),
     ...data.creators.map((item) => ({ type: "creator", item })),
     ...data.artworks.map((item) => ({ type: "artwork", item })),
+    ...data.products.map((item) => ({ type: "product", item })),
     ...data.events.map((item) => ({ type: "event", item })),
     ...data.workshops.map((item) => ({ type: "workshop", item })),
     ...data.sites.map((item) => ({ type: "site", item }))

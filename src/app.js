@@ -316,11 +316,11 @@ function renderCreatorDashboard(active = "Dashboard") {
           <p>Sample dashboard showing how cultural practitioners can understand visibility, support, and event opportunities.</p>
         </div>
         <div class="quick-actions">
-          <button>Upload Artwork</button>
-          <button>Add Product</button>
-          <button>Create Event</button>
-          <button>Add Workshop</button>
-          <button>Edit Profile</button>
+          <button data-nav="My Art">Upload Artwork</button>
+          <button data-nav="Products">Add Product</button>
+          <button data-nav="Events">Create Event</button>
+          <button data-nav="Events">Add Workshop</button>
+          <button data-nav="Profile">Edit Profile</button>
           <button data-open="creator:creator-khatri-demo">View Public Profile</button>
         </div>
       </section>
@@ -373,6 +373,77 @@ function renderDiscover() {
       </div>
     </main>
   `, "Discover");
+}
+
+function renderCreatorStudio(active = "My Art") {
+  app.innerHTML = shell(`
+    <main class="section creator-studio">
+      <div class="section-head">
+        <p class="eyebrow">Creator studio</p>
+        <h1>Upload artwork</h1>
+        <p>Save a culturally contextualized draft before publishing. This is a prototype workflow; uploaded files are not sent to storage yet.</p>
+      </div>
+      <div class="studio-layout">
+        <form class="studio-form" id="artworkDraftForm">
+          <label>Artwork name<input name="name" value="Tree of Life Cloth Panel" required /></label>
+          <label>Category<input name="category" value="Textile painting" required /></label>
+          <label>Tradition<select name="tradition">${data.traditions.map((tradition) => `<option>${tradition.name}</option>`).join("")}</select></label>
+          <label>Description<textarea name="description" rows="3">A cloth work connected to Rogan Painting and Kutch cultural storytelling.</textarea></label>
+          <label>Cultural significance<textarea name="significance" rows="3">Explain the story, practice, motifs, and relationship to the living tradition before listing it as a supportable work.</textarea></label>
+          <label>Materials<input name="materials" value="Cloth, oil-based pigment paste, metal stylus" /></label>
+          <label>Region<input name="region" value="Kutch, Gujarat" /></label>
+          <label>Images<input name="images" type="file" multiple /></label>
+          <label>Optional video<input name="video" type="file" /></label>
+          <label>Price if applicable<input name="price" value="Demo inquiry only" /></label>
+          <label>Availability<select name="availability"><option>Draft</option><option>Available for support inquiry</option><option>Unavailable</option></select></label>
+          <label>Tags<input name="tags" value="rogan, kutch, textile, demo" /></label>
+          <div class="card-actions">
+            <button class="button" type="submit" data-draft-action="draft">Save as draft</button>
+            <button class="button primary" type="submit" data-draft-action="preview">Preview before publishing</button>
+          </div>
+        </form>
+        <aside class="draft-preview" id="draftPreview">
+          <p class="eyebrow">Preview</p>
+          <h2>Your first artwork starts here.</h2>
+          <p>Complete the form to generate a reviewable draft card.</p>
+        </aside>
+      </div>
+    </main>
+  `, active);
+}
+
+function renderProductManagement(active = "Products") {
+  app.innerHTML = shell(`
+    <main class="section">
+      <div class="section-head">
+        <p class="eyebrow">Product management</p>
+        <h1>Supportable works, not a generic marketplace</h1>
+        <p>Products stay connected to cultural context, creator story, source status, and support interest.</p>
+      </div>
+      <div class="grid">
+        ${data.products.map((product) => `
+          <article class="card">
+            <div class="card-body">
+              <div class="badges">${badge(product)}</div>
+              <h3>${product.title}</h3>
+              <p>${product.description}</p>
+              <div class="mini-metrics">
+                <span>${product.views} views</span>
+                <span>${product.likes} likes</span>
+                <span>${product.supportInterest} support inquiries</span>
+              </div>
+              <p><strong>${product.availability}</strong></p>
+              <div class="card-actions">
+                <button class="text-button">Edit</button>
+                <button class="text-button">Mark unavailable</button>
+                <button class="text-button" data-open="work:${product.artworkId}">View cultural work</button>
+              </div>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    </main>
+  `, active);
 }
 
 function renderMarkerInfo(marker) {
@@ -483,6 +554,7 @@ function openEntity(target) {
     event: data.events,
     workshop: data.workshops,
     work: data.artworks,
+    product: data.products,
     site: data.sites
   };
   const entity = collections[type]?.find((item) => item.id === id);
@@ -527,6 +599,7 @@ function runSearch(query) {
     ...data.traditions.map((item) => ({ type: "tradition", item })),
     ...data.creators.map((item) => ({ type: "creator", item })),
     ...data.artworks.map((item) => ({ type: "work", item })),
+    ...data.products.map((item) => ({ type: "product", item })),
     ...data.events.map((item) => ({ type: "event", item })),
     ...data.workshops.map((item) => ({ type: "workshop", item })),
     ...data.sites.map((item) => ({ type: "site", item }))
@@ -566,6 +639,8 @@ function routeNav(label) {
   } else if (label === "Events") {
     app.innerHTML = shell(`<main class="section"><div class="section-head"><p class="eyebrow">Events</p><h1>Cultural events</h1></div><div class="grid">${data.events.map((item) => card(item, "event", { meta: `${item.date} • ${item.location}` })).join("")}</div></main>`, label);
   } else if (label === "Dashboard") renderCreatorDashboard(label);
+  else if (label === "My Art") renderCreatorStudio(label);
+  else if (label === "Products") renderProductManagement(label);
   else renderComingSoon(label);
 }
 
@@ -662,6 +737,24 @@ document.body.addEventListener("submit", (event) => {
     event.preventDefault();
     const query = new FormData(event.target).get("query").toString().trim();
     if (query) runSearch(query);
+  }
+  if (event.target.id === "artworkDraftForm") {
+    event.preventDefault();
+    const form = new FormData(event.target);
+    const preview = document.querySelector("#draftPreview");
+    const action = event.submitter?.dataset.draftAction || "draft";
+    preview.innerHTML = `
+      <p class="eyebrow">${action === "preview" ? "Publishing preview" : "Draft saved"}</p>
+      <h2>${form.get("name")}</h2>
+      <p>${form.get("description")}</p>
+      <dl class="marker-facts">
+        <div><dt>Tradition</dt><dd>${form.get("tradition")}</dd></div>
+        <div><dt>Region</dt><dd>${form.get("region")}</dd></div>
+        <div><dt>Materials</dt><dd>${form.get("materials")}</dd></div>
+        <div><dt>Availability</dt><dd>${form.get("availability")}</dd></div>
+      </dl>
+      <p class="warning">Demo draft only. A creator/admin review and source workflow is required before publishing cultural claims.</p>
+    `;
   }
 });
 

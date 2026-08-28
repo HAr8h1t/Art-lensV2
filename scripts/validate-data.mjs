@@ -38,6 +38,7 @@ const sourceIds = new Set(data.sources.map((item) => item.id));
 const regionIds = new Set(data.regions.map((item) => item.id));
 const traditionIds = new Set(data.traditions.map((item) => item.id));
 const creatorIds = new Set(data.creators.map((item) => item.id));
+const artworkIds = new Set(data.artworks.map((item) => item.id));
 const siteIds = new Set(data.sites.map((item) => item.id));
 const eventIds = new Set(data.events.map((item) => item.id));
 const workshopIds = new Set(data.workshops.map((item) => item.id));
@@ -46,11 +47,12 @@ requireFields("regions", ["id", "state", "name", "summary", "verification"]);
 requireFields("traditions", ["id", "name", "regionId", "intro", "verification"]);
 requireFields("creators", ["id", "name", "regionId", "traditionIds", "bio", "verification"]);
 requireFields("artworks", ["id", "title", "creatorId", "traditionIds", "verification"]);
+requireFields("products", ["id", "title", "creatorId", "artworkId", "traditionIds", "availability", "verification"]);
 requireFields("events", ["id", "title", "date", "location", "traditionIds", "verification"]);
 requireFields("workshops", ["id", "title", "creatorId", "traditionIds", "verification"]);
 requireFields("mapMarkers", ["id", "label", "kind", "state", "regionId", "siteId", "traditionId", "x", "y"]);
 
-for (const collectionName of ["regions", "traditions", "creators", "artworks", "sites", "events", "workshops"]) {
+for (const collectionName of ["regions", "traditions", "creators", "artworks", "products", "sites", "events", "workshops"]) {
   assertVerification(collectionName);
   assertRefs(collectionName, "sourceIds", sourceIds);
 }
@@ -61,6 +63,9 @@ assertRefs("creators", "regionId", regionIds);
 assertRefs("creators", "traditionIds", traditionIds);
 assertRefs("artworks", "creatorId", creatorIds);
 assertRefs("artworks", "traditionIds", traditionIds);
+assertRefs("products", "creatorId", creatorIds);
+assertRefs("products", "artworkId", artworkIds);
+assertRefs("products", "traditionIds", traditionIds);
 assertRefs("events", "traditionIds", traditionIds);
 assertRefs("events", "creatorIds", creatorIds);
 assertRefs("workshops", "creatorId", creatorIds);
