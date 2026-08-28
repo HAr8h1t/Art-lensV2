@@ -37,6 +37,7 @@ const demoProfiles = {
 const state = {
   screen: "role",
   selectedRole: null,
+  creatorFilter: "all",
   session: JSON.parse(sessionStorage.getItem("artLensSession") || "null"),
   user: JSON.parse(localStorage.getItem("artLensUserState") || "{\"following\":[],\"saved\":[],\"support\":[],\"registeredEvents\":[],\"recent\":[]}")
 };
@@ -456,6 +457,94 @@ function renderProductManagement(active = "Products") {
   `, active);
 }
 
+function renderCreatorsPage(active = "Creators") {
+  const filters = [
+    ["all", "All creators"],
+    ["textile", "Textile arts"],
+    ["upcoming", "Upcoming events"],
+    ["popular", "Popular"]
+  ];
+  const creators = data.creators
+    .filter((creator) => {
+      if (state.creatorFilter === "textile") {
+        return creator.traditionIds.some((id) => {
+          const category = traditionById.get(id)?.category.toLowerCase() || "";
+          return category.includes("textile") || category.includes("needle") || category.includes("printing");
+        });
+      }
+      if (state.creatorFilter === "upcoming") {
+        return data.events.some((event) => event.creatorIds?.includes(creator.id));
+      }
+      return true;
+    })
+    .sort((a, b) => (state.creatorFilter === "popular" ? (b.followers || 0) - (a.followers || 0) : 0));
+
+  app.innerHTML = shell(`
+    <main class="section">
+      <div class="section-head">
+        <p class="eyebrow">Creators</p>
+        <h1>Browse artisans by culture, region, and activity</h1>
+        <p>Each creator card keeps practice, followers, works, events, support, and verification visible.</p>
+      </div>
+      <div class="filter-bar">
+        ${filters.map(([id, label]) => `<button class="${state.creatorFilter === id ? "active" : ""}" data-creator-filter="${id}">${label}</button>`).join("")}
+      </div>
+      ${
+        creators.length
+          ? `<div class="grid">${creators.map((item) => card(item, "creator", { meta: `${item.yearsPractice} • ${item.recentActivity}` })).join("")}</div>`
+          : `<div class="empty-card"><h3>No creators found.</h3><p>More creators will appear as sourced Gujarat records are onboarded.</p></div>`
+      }
+    </main>
+  `, active);
+}
+
+function renderEventsPage(active = "Events") {
+  const eventCards = data.events.map((event) => {
+    const traditions = event.traditionIds.map((id) => traditionById.get(id)?.name).filter(Boolean).join(", ");
+    const registered = state.user.registeredEvents.includes(event.id);
+    const saved = state.user.saved.includes(`event:${event.id}`);
+    return `
+      <article class="event-card">
+        <img src="${event.image}" alt="${event.title}" loading="lazy" />
+        <div class="event-body">
+          <div class="badges">${badge(event)}</div>
+          <h3>${event.title}</h3>
+          <p>${event.description}</p>
+          <dl class="event-facts">
+            <div><dt>Date</dt><dd>${event.date}</dd></div>
+            <div><dt>Time</dt><dd>${event.time}</dd></div>
+            <div><dt>Location</dt><dd>${event.location}</dd></div>
+            <div><dt>Distance</dt><dd>${event.distance}</dd></div>
+            <div><dt>Organizer</dt><dd>${event.organizer}</dd></div>
+            <div><dt>Traditions</dt><dd>${traditions}</dd></div>
+            <div><dt>Status</dt><dd>${event.seats}</dd></div>
+          </dl>
+          <div class="card-actions">
+            <button class="text-button" data-open="event:${event.id}">View Details</button>
+            <button class="text-button" data-save="event:${event.id}">${saved ? "Saved" : "Save Event"}</button>
+            <button class="text-button support" data-register-event="${event.id}">${registered ? "Registered" : "Register / Contact"}</button>
+          </div>
+        </div>
+      </article>
+    `;
+  });
+
+  app.innerHTML = shell(`
+    <main class="section">
+      <div class="section-head">
+        <p class="eyebrow">Events</p>
+        <h1>Cultural events and experiences</h1>
+        <p>Events appear here and remain linked back to creators, traditions, map locations, and sources.</p>
+      </div>
+      <div class="event-grid">${eventCards.join("")}</div>
+      <div class="empty-card subtle-empty">
+        <h3>No additional events found nearby.</h3>
+        <p>More events will be added only when there is sourced or creator-submitted data.</p>
+      </div>
+    </main>
+  `, active);
+}
+
 function renderMarkerInfo(marker) {
   const tradition = traditionById.get(marker.traditionId);
   const creator = creatorById.get(marker.creatorId);
@@ -644,11 +733,9 @@ function showSupport(creatorId) {
 function routeNav(label) {
   if (label === "Home") renderExplorerHome(label);
   else if (label === "Discover") renderDiscover();
-  else if (label === "Creators") {
-    app.innerHTML = shell(`<main class="section"><div class="section-head"><p class="eyebrow">Creators</p><h1>Browse artisans</h1></div><div class="grid">${data.creators.map((item) => card(item, "creator")).join("")}</div></main>`, label);
-  } else if (label === "Events") {
-    app.innerHTML = shell(`<main class="section"><div class="section-head"><p class="eyebrow">Events</p><h1>Cultural events</h1></div><div class="grid">${data.events.map((item) => card(item, "event", { meta: `${item.date} • ${item.location}` })).join("")}</div></main>`, label);
-  } else if (label === "Dashboard") renderCreatorDashboard(label);
+  else if (label === "Creators") renderCreatorsPage(label);
+  else if (label === "Events") renderEventsPage(label);
+  else if (label === "Dashboard") renderCreatorDashboard(label);
   else if (label === "My Art") renderCreatorStudio(label);
   else if (label === "Products") renderProductManagement(label);
   else renderComingSoon(label);
@@ -682,6 +769,7 @@ document.body.addEventListener("click", (event) => {
   const save = event.target.closest("[data-save]")?.dataset.save;
   const registerEvent = event.target.closest("[data-register-event]")?.dataset.registerEvent;
   const confirmSupport = event.target.closest("[data-confirm-support]")?.dataset.confirmSupport;
+  const creatorFilter = event.target.closest("[data-creator-filter]")?.dataset.creatorFilter;
 
   if (role) {
     state.selectedRole = role;
@@ -746,6 +834,10 @@ document.body.addEventListener("click", (event) => {
     state.user.support = [{ creatorId: confirmSupport, amount, reason, createdAt: new Date().toISOString() }, ...state.user.support];
     saveUserState();
     dialogBody.innerHTML = `<h2>Demo support recorded</h2><p class="lead">${amount} marked for ${entityTitle("creator", confirmSupport)}.</p><p>No real transaction occurred.</p>`;
+  }
+  if (creatorFilter) {
+    state.creatorFilter = creatorFilter;
+    renderCreatorsPage();
   }
 });
 

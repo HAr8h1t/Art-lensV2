@@ -615,6 +615,29 @@ h2 {
   gap: 16px;
 }
 
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 24px;
+}
+
+.filter-bar button {
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.filter-bar button:hover,
+.filter-bar button.active {
+  transform: translateY(-1px);
+  border-color: var(--teal);
+  background: #e8f2ec;
+}
+
 .badges {
   display: flex;
   flex-wrap: wrap;
@@ -877,6 +900,73 @@ h2 {
   font-weight: 800;
 }
 
+.event-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.event-card {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1fr);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--soft-shadow);
+  overflow: hidden;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+
+.event-card img {
+  width: 100%;
+  height: 100%;
+  min-height: 310px;
+  object-fit: cover;
+}
+
+.event-body {
+  padding: 22px;
+}
+
+.event-body h3 {
+  font-size: clamp(26px, 3vw, 42px);
+  margin: 12px 0;
+}
+
+.event-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.event-facts div {
+  border: 1px solid var(--line);
+  background: #f7f8f5;
+  padding: 12px;
+}
+
+.event-facts dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.event-facts dd {
+  margin: 4px 0 0;
+  font-weight: 800;
+}
+
+.subtle-empty {
+  margin-top: 18px;
+  box-shadow: none;
+  background: #f7f8f5;
+}
+
 @keyframes pulsePin {
   0%,
   100% {
@@ -1098,6 +1188,7 @@ h2 {
   .discover-layout,
   .two-column,
   .studio-layout,
+  .event-card,
   .creator-dashboard .dashboard-hero {
     display: block;
   }
@@ -1133,6 +1224,10 @@ h2 {
   }
 
   .studio-form {
+    grid-template-columns: 1fr;
+  }
+
+  .event-facts {
     grid-template-columns: 1fr;
   }
 

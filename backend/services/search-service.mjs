@@ -24,7 +24,7 @@ export function structuredSearch(query) {
 
   return records()
     .map(({ type, item }) => {
-      const haystack = JSON.stringify(item).toLowerCase();
+      const haystack = `${type} ${JSON.stringify(item)}`.toLowerCase();
       const score = terms.reduce((total, term) => total + (haystack.includes(term) ? 1 : 0), 0);
       return {
         id: item.id,

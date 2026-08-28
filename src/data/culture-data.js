@@ -78,6 +78,10 @@ export const data = {
       story: "The profile demonstrates how ART-LENS would preserve a creator's practice, works, workshops, events, sources, and contact path without reducing the person to a seller.",
       image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kutchi%20Embroidery.png",
       contact: "Demo contact request form",
+      yearsPractice: "Demo profile: 12+ years practice placeholder",
+      followers: 506,
+      likes: 1280,
+      recentActivity: "Workshop draft updated for Rogan Painting introduction.",
       verification: "community_submitted",
       isDemo: true,
       sourceIds: ["src-gujarat-nirona"]
@@ -92,6 +96,10 @@ export const data = {
       story: "This demo account shows how collectives could publish cultural context, media, events, and support options.",
       image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kutchi%20Embroidery.png",
       contact: "Demo workshop inquiry",
+      yearsPractice: "Demo collective profile",
+      followers: 388,
+      likes: 940,
+      recentActivity: "Textile support inquiry received in demo mode.",
       verification: "unverified",
       isDemo: true,
       sourceIds: []

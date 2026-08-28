@@ -32,6 +32,11 @@ try {
   await expectOk("/api/health");
   const search = await expectOk("/api/search?q=Kutch%20Rogan");
   if (!search.results.length) throw new Error("Search returned no results");
+  const productSearch = await expectOk("/api/search?q=product");
+  if (!productSearch.results.some((result) => result.type === "product")) throw new Error("Product search returned no product results");
+  const entities = await expectOk("/api/entities");
+  if (!entities.products?.length) throw new Error("Entities API did not include products");
+  if (!entities.mapMarkers?.length) throw new Error("Entities API did not include map markers");
   await expectOk("/api/relationships/tradition/trad-rogan");
   await expectOk("/api/admin/review-queue", { headers: { "x-demo-role": "admin" } });
   const suggestions = await expectOk("/api/ai/onboarding-suggestions", {

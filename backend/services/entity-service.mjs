@@ -6,7 +6,9 @@ export function allEntities() {
     traditions: data.traditions,
     creators: data.creators,
     artworks: data.artworks,
+    products: data.products,
     sites: data.sites,
+    mapMarkers: data.mapMarkers,
     events: data.events,
     workshops: data.workshops,
     sources: data.sources,
@@ -21,7 +23,7 @@ export function getEntity(collectionName, id) {
 }
 
 export function reviewQueue() {
-  const queueCollections = ["traditions", "creators", "artworks", "events", "workshops", "sites"];
+  const queueCollections = ["traditions", "creators", "artworks", "products", "events", "workshops", "sites"];
   return queueCollections.flatMap((collectionName) =>
     data[collectionName].map((item) => ({
       id: item.id,
