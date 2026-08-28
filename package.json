@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node scripts/serve.mjs",
-    "test": "node scripts/validate-data.mjs"
+    "start": "node backend/server.mjs",
+    "test": "node scripts/validate-data.mjs && node scripts/smoke-api.mjs",
+    "test:data": "node scripts/validate-data.mjs",
+    "test:api": "node scripts/smoke-api.mjs"
   }
 }
