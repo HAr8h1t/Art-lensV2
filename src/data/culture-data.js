@@ -147,14 +147,61 @@ export const data = {
       sourceIds: ["src-gujarat-rann", "src-kachchh-festivals"]
     }
   ],
+  mapMarkers: [
+    {
+      id: "marker-nirona-rogan",
+      label: "Nirona Rogan Cluster",
+      kind: "craft",
+      state: "Gujarat",
+      regionId: "region-kutch",
+      siteId: "site-nirona",
+      traditionId: "trad-rogan",
+      creatorId: "creator-khatri-demo",
+      workshopId: "workshop-rogan-demo",
+      x: 31,
+      y: 47,
+      distance: "72 km from Bhuj demo center"
+    },
+    {
+      id: "marker-white-rann-event",
+      label: "White Rann Cultural Evenings",
+      kind: "event",
+      state: "Gujarat",
+      regionId: "region-kutch",
+      siteId: "site-white-rann",
+      traditionId: "trad-kutch-embroidery",
+      creatorId: "creator-embroidery-demo",
+      eventId: "event-rann-utsav-demo",
+      x: 58,
+      y: 26,
+      distance: "86 km from Bhuj demo center"
+    },
+    {
+      id: "marker-kutch-textiles",
+      label: "Kutch Textile Network",
+      kind: "artisan",
+      state: "Gujarat",
+      regionId: "region-kutch",
+      siteId: "site-white-rann",
+      traditionId: "trad-ajrak",
+      creatorId: "creator-embroidery-demo",
+      x: 47,
+      y: 58,
+      distance: "Regional discovery cluster"
+    }
+  ],
   events: [
     {
       id: "event-rann-utsav-demo",
       title: "Rann Utsav Cultural Evenings",
       type: "Festival",
+      image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/White%20Rann%20of%20Kutch.jpg",
       date: "2026-11-05",
-      time: "Evening programming",
+      time: "6:00 PM - 10:00 PM",
       location: "White Rann / Dhordo, Kutch",
+      distance: "86 km from Bhuj demo center",
+      seats: "Demo status: contact organizer",
+      organizer: "Rann Utsav cultural programming",
       regionId: "region-kutch",
       traditionIds: ["trad-rogan", "trad-kutch-embroidery", "trad-ajrak"],
       creatorIds: ["creator-khatri-demo", "creator-embroidery-demo"],

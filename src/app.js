@@ -365,16 +365,39 @@ function renderDiscover() {
       <div class="discover-layout">
         <div class="india-map" aria-label="India cultural map">
           ${states.map((item, index) => `<button class="state-node ${item.status}" style="--x:${18 + index * 12}%;--y:${28 + (index % 3) * 18}%;" data-state="${item.name}">${item.name}</button>`).join("")}
+          ${data.mapMarkers.map((marker) => `<button class="culture-marker ${marker.kind}" style="--x:${marker.x}%;--y:${marker.y}%;" data-marker="${marker.id}"><span>${marker.kind}</span>${marker.label}</button>`).join("")}
         </div>
-        <aside class="side-panel">
-          <div class="badges"><span class="badge source_backed">Gujarat Active</span></div>
-          <h3>Kutch cultural network</h3>
-          <p>Rogan Painting, Kutch Embroidery, Ajrakh, Nirona Village, White Rann, Rann Utsav, demo creators, and workshops.</p>
-          <div class="pill-row">${data.sites.map((site) => `<button data-site="${site.id}">${site.name}</button>`).join("")}</div>
+        <aside class="side-panel" id="mapInfo">
+          ${renderMarkerInfo(data.mapMarkers[0])}
         </aside>
       </div>
     </main>
   `, "Discover");
+}
+
+function renderMarkerInfo(marker) {
+  const tradition = traditionById.get(marker.traditionId);
+  const creator = creatorById.get(marker.creatorId);
+  const site = data.sites.find((item) => item.id === marker.siteId);
+  const event = data.events.find((item) => item.id === marker.eventId);
+  const workshop = data.workshops.find((item) => item.id === marker.workshopId);
+  return `
+    <div class="badges"><span class="badge source_backed">Gujarat Active</span><span class="badge">${marker.kind}</span></div>
+    <h3>${marker.label}</h3>
+    <p>${site?.description || "A cultural discovery point in Gujarat."}</p>
+    <dl class="marker-facts">
+      <div><dt>Traditional craft</dt><dd>${tradition?.name || "Linked tradition"}</dd></div>
+      <div><dt>Creator</dt><dd>${creator?.name || "Creator to be linked"}</dd></div>
+      <div><dt>Experience</dt><dd>${workshop?.title || "Workshop discovery available"}</dd></div>
+      <div><dt>Upcoming event</dt><dd>${event?.title || "No event linked yet"}</dd></div>
+      <div><dt>Distance</dt><dd>${marker.distance}</dd></div>
+    </dl>
+    <div class="card-actions">
+      <button class="text-button" data-open="tradition:${marker.traditionId}">Explore Tradition</button>
+      ${creator ? `<button class="text-button" data-open="creator:${creator.id}">View Creator</button>` : ""}
+      ${event ? `<button class="text-button" data-open="event:${event.id}">View Event</button>` : ""}
+    </div>
+  `;
 }
 
 function renderComingSoon(title) {
@@ -567,6 +590,7 @@ document.body.addEventListener("click", (event) => {
   const selectedState = event.target.closest("[data-state]")?.dataset.state;
   const open = event.target.closest("[data-open]")?.dataset.open;
   const site = event.target.closest("[data-site]")?.dataset.site;
+  const markerId = event.target.closest("[data-marker]")?.dataset.marker;
   const support = event.target.closest("[data-support]")?.dataset.support;
   const follow = event.target.closest("[data-follow]")?.dataset.follow;
   const save = event.target.closest("[data-save]")?.dataset.save;
@@ -598,6 +622,11 @@ document.body.addEventListener("click", (event) => {
   }
   if (open) openEntity(open);
   if (site) openEntity(`site:${site}`);
+  if (markerId) {
+    const marker = data.mapMarkers.find((item) => item.id === markerId);
+    const panel = document.querySelector("#mapInfo");
+    if (marker && panel) panel.innerHTML = renderMarkerInfo(marker);
+  }
   if (support) showSupport(support);
   if (follow) {
     toggleListValue("following", follow);

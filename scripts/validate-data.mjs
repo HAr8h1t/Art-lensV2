@@ -38,6 +38,9 @@ const sourceIds = new Set(data.sources.map((item) => item.id));
 const regionIds = new Set(data.regions.map((item) => item.id));
 const traditionIds = new Set(data.traditions.map((item) => item.id));
 const creatorIds = new Set(data.creators.map((item) => item.id));
+const siteIds = new Set(data.sites.map((item) => item.id));
+const eventIds = new Set(data.events.map((item) => item.id));
+const workshopIds = new Set(data.workshops.map((item) => item.id));
 
 requireFields("regions", ["id", "state", "name", "summary", "verification"]);
 requireFields("traditions", ["id", "name", "regionId", "intro", "verification"]);
@@ -45,6 +48,7 @@ requireFields("creators", ["id", "name", "regionId", "traditionIds", "bio", "ver
 requireFields("artworks", ["id", "title", "creatorId", "traditionIds", "verification"]);
 requireFields("events", ["id", "title", "date", "location", "traditionIds", "verification"]);
 requireFields("workshops", ["id", "title", "creatorId", "traditionIds", "verification"]);
+requireFields("mapMarkers", ["id", "label", "kind", "state", "regionId", "siteId", "traditionId", "x", "y"]);
 
 for (const collectionName of ["regions", "traditions", "creators", "artworks", "sites", "events", "workshops"]) {
   assertVerification(collectionName);
@@ -61,6 +65,12 @@ assertRefs("events", "traditionIds", traditionIds);
 assertRefs("events", "creatorIds", creatorIds);
 assertRefs("workshops", "creatorId", creatorIds);
 assertRefs("workshops", "traditionIds", traditionIds);
+assertRefs("mapMarkers", "regionId", regionIds);
+assertRefs("mapMarkers", "siteId", siteIds);
+assertRefs("mapMarkers", "traditionId", traditionIds);
+assertRefs("mapMarkers", "creatorId", creatorIds);
+assertRefs("mapMarkers", "eventId", eventIds);
+assertRefs("mapMarkers", "workshopId", workshopIds);
 
 if (errors.length) {
   console.error(errors.join("\n"));
