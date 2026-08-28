@@ -43,12 +43,41 @@ const demoProfiles = {
 const state = {
   screen: "role",
   selectedRole: null,
-  session: JSON.parse(sessionStorage.getItem("artLensSession") || "null")
+  session: JSON.parse(sessionStorage.getItem("artLensSession") || "null"),
+  user: JSON.parse(localStorage.getItem("artLensUserState") || "{\"following\":[],\"saved\":[],\"support\":[],\"registeredEvents\":[],\"recent\":[]}")
 };
 
 function saveSession(session) {
   state.session = session;
   sessionStorage.setItem("artLensSession", JSON.stringify(session));
+}
+
+function saveUserState() {
+  localStorage.setItem("artLensUserState", JSON.stringify(state.user));
+}
+
+function toggleListValue(listName, value) {
+  const list = state.user[listName];
+  state.user[listName] = list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
+  saveUserState();
+}
+
+function rememberRecent(type, id) {
+  state.user.recent = [{ type, id }, ...state.user.recent.filter((item) => item.type !== type || item.id !== id)].slice(0, 6);
+  saveUserState();
+}
+
+function entityTitle(type, id) {
+  const collections = {
+    creator: data.creators,
+    tradition: data.traditions,
+    work: data.artworks,
+    event: data.events,
+    workshop: data.workshops,
+    site: data.sites
+  };
+  const entity = collections[type]?.find((item) => item.id === id);
+  return entity?.name || entity?.title || id;
 }
 
 function badge(entity) {
@@ -177,6 +206,11 @@ function card(entity, type, options = {}) {
   const image = entity.image ? `<img src="${entity.image}" alt="${entity.name || entity.title}" loading="lazy" />` : "";
   const title = entity.name || entity.title;
   const description = entity.intro || entity.bio || entity.description || entity.summary;
+  const isCreator = type === "creator";
+  const isEvent = type === "event";
+  const followerBase = entity.followers || (isCreator ? 420 + entity.traditionIds.length * 85 : 0);
+  const followed = isCreator && state.user.following.includes(entity.id);
+  const saved = state.user.saved.includes(`${type}:${entity.id}`);
   return `
     <article class="card reveal">
       ${image}
@@ -185,9 +219,17 @@ function card(entity, type, options = {}) {
         <h3>${title}</h3>
         <p>${description}</p>
         ${options.meta ? `<small class="meta">${options.meta}</small>` : ""}
+        ${
+          isCreator
+            ? `<div class="mini-metrics"><span>${followerBase + (followed ? 1 : 0)} followers</span><span>${data.artworks.filter((work) => work.creatorId === entity.id).length} works</span><span>${data.events.filter((event) => event.creatorIds?.includes(entity.id)).length} events</span></div>`
+            : ""
+        }
         <div class="card-actions">
           <button class="text-button" data-open="${type}:${entity.id}">Explore</button>
-          ${type === "creator" ? `<button class="text-button support" data-support="${entity.id}">Support Artisan</button>` : ""}
+          ${isCreator ? `<button class="text-button" data-follow="${entity.id}">${followed ? "Unfollow" : "Follow"}</button>` : ""}
+          ${isCreator ? `<button class="text-button support" data-support="${entity.id}">Support Artisan</button>` : ""}
+          ${!isCreator ? `<button class="text-button" data-save="${type}:${entity.id}">${saved ? "Saved" : "Save"}</button>` : ""}
+          ${isEvent ? `<button class="text-button" data-register-event="${entity.id}">${state.user.registeredEvents.includes(entity.id) ? "Registered" : "Register / Contact"}</button>` : ""}
         </div>
       </div>
     </article>
@@ -237,8 +279,24 @@ function renderExplorerHome(active = "Home") {
         </div>
         <div class="recommendation-strip">${data.creators.map((item) => card(item, "creator", { meta: `${item.role} • ${item.traditionIds.length} tradition links` })).join("")}</div>
       </section>
+      <section class="section">
+        <div class="section-head">
+          <p class="eyebrow">Following</p>
+          <h2>Your creator network</h2>
+          <p>Followed creators appear here so the experience feels like a living platform, not a static directory.</p>
+        </div>
+        ${renderFollowingBlock()}
+      </section>
     </main>
   `, active);
+}
+
+function renderFollowingBlock() {
+  const creators = data.creators.filter((creator) => state.user.following.includes(creator.id));
+  if (!creators.length) {
+    return `<div class="empty-card"><h3>No creators followed yet.</h3><p>Follow an artisan to build your personal cultural network.</p></div>`;
+  }
+  return `<div class="grid">${creators.map((creator) => card(creator, "creator")).join("")}</div>`;
 }
 
 function renderCreatorDashboard(active = "Dashboard") {
@@ -324,9 +382,53 @@ function renderComingSoon(title) {
     <main class="section empty-state">
       <p class="eyebrow">Coming next</p>
       <h1>${title}</h1>
-      <p>This screen has its route in place. The next commits will expand it without fabricating unavailable cultural records.</p>
+      ${title === "Saved" || title === "Profile" ? renderUserDashboard(title) : "<p>This screen has its route in place. The next commits will expand it without fabricating unavailable cultural records.</p>"}
     </main>
   `, title);
+}
+
+function renderUserDashboard(title) {
+  const saved = state.user.saved.map((key) => {
+    const [type, id] = key.split(":");
+    return { type, id, title: entityTitle(type, id) };
+  });
+  const support = state.user.support;
+  const recent = state.user.recent.map((item) => ({ ...item, title: entityTitle(item.type, item.id) }));
+
+  return `
+    <div class="profile-grid">
+      <article class="profile-panel">
+        <p class="eyebrow">My profile</p>
+        <h2>${demoProfiles[state.session.role].title}</h2>
+        <p>Exploring Gujarat manually. Demo account for SIH prototype flow.</p>
+      </article>
+      <article class="profile-panel">
+        <p class="eyebrow">Following</p>
+        <h2>${state.user.following.length} creators</h2>
+        ${state.user.following.length ? state.user.following.map((id) => `<button class="list-button" data-open="creator:${id}">${entityTitle("creator", id)}</button>`).join("") : "<p>No creators followed yet.</p>"}
+      </article>
+      <article class="profile-panel">
+        <p class="eyebrow">Saved</p>
+        <h2>${saved.length} items</h2>
+        ${saved.length ? saved.map((item) => `<button class="list-button" data-open="${item.type}:${item.id}">${item.title}</button>`).join("") : "<p>No saved items yet.</p>"}
+      </article>
+      <article class="profile-panel">
+        <p class="eyebrow">My support</p>
+        <h2>${support.length} demo contributions</h2>
+        ${support.length ? support.map((item) => `<p>${item.amount} for ${entityTitle("creator", item.creatorId)}: ${item.reason}</p>`).join("") : "<p>No demo support recorded yet.</p>"}
+      </article>
+      <article class="profile-panel">
+        <p class="eyebrow">My events</p>
+        <h2>${state.user.registeredEvents.length} registered</h2>
+        ${state.user.registeredEvents.length ? state.user.registeredEvents.map((id) => `<button class="list-button" data-open="event:${id}">${entityTitle("event", id)}</button>`).join("") : "<p>No event registrations yet.</p>"}
+      </article>
+      <article class="profile-panel">
+        <p class="eyebrow">Recently explored</p>
+        <h2>${recent.length} records</h2>
+        ${recent.length ? recent.map((item) => `<button class="list-button" data-open="${item.type}:${item.id}">${item.title}</button>`).join("") : "<p>Open a tradition, creator, or event to start your trail.</p>"}
+      </article>
+    </div>
+  `;
 }
 
 function relationshipTrail(entity) {
@@ -362,6 +464,7 @@ function openEntity(target) {
   };
   const entity = collections[type]?.find((item) => item.id === id);
   if (!entity) return;
+  rememberRecent(type, id);
 
   const relatedTraditionIds = entity.traditionIds || entity.relatedTraditionIds || [entity.id];
   const relatedCreators = data.creators.filter((creator) => relatedTraditionIds.some((traditionId) => creator.traditionIds.includes(traditionId)));
@@ -383,7 +486,11 @@ function openEntity(target) {
       <section><h3>Works</h3>${relatedWorks.length ? relatedWorks.map((item) => `<button class="list-button" data-open="work:${item.id}">${item.title}</button>`).join("") : "<p class='muted'>No work linked yet.</p>"}</section>
       <section><h3>Events</h3>${relatedEvents.length ? relatedEvents.map((item) => `<button class="list-button" data-open="event:${item.id}">${item.title}</button>`).join("") : "<p class='muted'>No event linked yet.</p>"}</section>
     </div>
-    ${type === "creator" ? `<button class="button primary" data-support="${entity.id}">Support Artisan</button>` : ""}
+    <div class="card-actions">
+      ${type === "creator" ? `<button class="button primary" data-follow="${entity.id}">${state.user.following.includes(entity.id) ? "Unfollow" : "Follow"}</button><button class="button primary" data-support="${entity.id}">Support Artisan</button>` : ""}
+      ${type !== "creator" ? `<button class="button" data-save="${type}:${entity.id}">${state.user.saved.includes(`${type}:${entity.id}`) ? "Saved" : "Save"}</button>` : ""}
+      ${type === "event" ? `<button class="button primary" data-register-event="${entity.id}">${state.user.registeredEvents.includes(entity.id) ? "Registered" : "Register / Contact"}</button>` : ""}
+    </div>
     <h3>Sources / References</h3>
     ${sourceLinks(entity)}
   `;
@@ -419,10 +526,10 @@ function showSupport(creatorId) {
     <p class="lead">Help this creator continue their craft.</p>
     <p><strong>${creator?.name ?? "Demo Creator"}</strong></p>
     <form class="support-form">
-      <label>Amount<select><option>₹250</option><option>₹500</option><option>₹1000</option></select></label>
-      <label>Reason<select><option>Support craft continuity</option><option>Workshop interest</option><option>Commission inquiry</option></select></label>
+      <label>Amount<select name="amount"><option>₹250</option><option>₹500</option><option>₹1000</option></select></label>
+      <label>Reason<select name="reason"><option>Support craft continuity</option><option>Workshop interest</option><option>Commission inquiry</option></select></label>
       <p class="warning">Demo transaction — no real money will be transferred.</p>
-      <button class="button primary" type="button" data-confirm-support>Confirm demo support</button>
+      <button class="button primary" type="button" data-confirm-support="${creatorId}">Confirm demo support</button>
     </form>
   `;
   dialog.showModal();
@@ -461,7 +568,10 @@ document.body.addEventListener("click", (event) => {
   const open = event.target.closest("[data-open]")?.dataset.open;
   const site = event.target.closest("[data-site]")?.dataset.site;
   const support = event.target.closest("[data-support]")?.dataset.support;
-  const confirmSupport = event.target.closest("[data-confirm-support]");
+  const follow = event.target.closest("[data-follow]")?.dataset.follow;
+  const save = event.target.closest("[data-save]")?.dataset.save;
+  const registerEvent = event.target.closest("[data-register-event]")?.dataset.registerEvent;
+  const confirmSupport = event.target.closest("[data-confirm-support]")?.dataset.confirmSupport;
 
   if (role) {
     state.selectedRole = role;
@@ -489,8 +599,27 @@ document.body.addEventListener("click", (event) => {
   if (open) openEntity(open);
   if (site) openEntity(`site:${site}`);
   if (support) showSupport(support);
+  if (follow) {
+    toggleListValue("following", follow);
+    routeNav(state.session?.role === "creator" ? "Dashboard" : "Home");
+  }
+  if (save) {
+    toggleListValue("saved", save);
+    dialogBody.innerHTML = `<h2>${state.user.saved.includes(save) ? "Saved" : "Removed from saved"}</h2><p class="lead">${entityTitle(...save.split(":"))}</p>`;
+    dialog.showModal();
+  }
+  if (registerEvent) {
+    toggleListValue("registeredEvents", registerEvent);
+    dialogBody.innerHTML = `<h2>${state.user.registeredEvents.includes(registerEvent) ? "Demo registration saved" : "Registration removed"}</h2><p class="lead">${entityTitle("event", registerEvent)}</p><p>No real booking or payment occurred.</p>`;
+    dialog.showModal();
+  }
   if (confirmSupport) {
-    dialogBody.innerHTML = `<h2>Demo support recorded</h2><p class="lead">This simulated support action is now part of the prototype flow. No real transaction occurred.</p>`;
+    const form = event.target.closest("form");
+    const amount = new FormData(form).get("amount");
+    const reason = new FormData(form).get("reason");
+    state.user.support = [{ creatorId: confirmSupport, amount, reason, createdAt: new Date().toISOString() }, ...state.user.support];
+    saveUserState();
+    dialogBody.innerHTML = `<h2>Demo support recorded</h2><p class="lead">${amount} marked for ${entityTitle("creator", confirmSupport)}.</p><p>No real transaction occurred.</p>`;
   }
 });
 
