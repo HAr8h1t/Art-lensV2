@@ -1,14 +1,28 @@
 import { data, verificationStates } from "../../src/data/culture-data.js";
 
+function markersWithCoordinates() {
+  return data.mapMarkers.map((marker) => {
+    const site = data.sites.find((item) => item.id === marker.siteId);
+    return {
+      ...marker,
+      latitude: site?.latitude ?? null,
+      longitude: site?.longitude ?? null,
+      verificationStatus: site?.verification || "unverified",
+      sourceIds: site?.sourceIds || []
+    };
+  });
+}
+
 export function allEntities() {
   return {
+    states: data.states,
     regions: data.regions,
     traditions: data.traditions,
     creators: data.creators,
     artworks: data.artworks,
     products: data.products,
     sites: data.sites,
-    mapMarkers: data.mapMarkers,
+    mapMarkers: markersWithCoordinates(),
     events: data.events,
     workshops: data.workshops,
     sources: data.sources,
@@ -67,9 +81,9 @@ export function relationshipBundle(type, id) {
     traditions: data.traditions.filter((tradition) => traditionIds.has(tradition.id)),
     creators: data.creators.filter((creator) => creatorIds.has(creator.id)),
     artworks: data.artworks.filter((artwork) => artwork.traditionIds.some((traditionId) => traditionIds.has(traditionId))),
-    sites: data.sites.filter((site) => site.relatedTraditionIds.some((traditionId) => traditionIds.has(traditionId))),
-    events: data.events.filter((event) => event.traditionIds.some((traditionId) => traditionIds.has(traditionId))),
-    workshops: data.workshops.filter((workshop) => workshop.traditionIds.some((traditionId) => traditionIds.has(traditionId))),
+    sites: data.sites.filter((site) => (site.relatedTraditionIds || []).some((traditionId) => traditionIds.has(traditionId))),
+    events: data.events.filter((event) => (event.traditionIds || []).some((traditionId) => traditionIds.has(traditionId))),
+    workshops: data.workshops.filter((workshop) => (workshop.traditionIds || []).some((traditionId) => traditionIds.has(traditionId))),
     sources: (entity.sourceIds || []).map((sourceId) => data.sources.find((source) => source.id === sourceId)).filter(Boolean)
   };
 }

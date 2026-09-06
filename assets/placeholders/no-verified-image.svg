@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+  <title id="title">No verified image yet</title>
+  <desc id="desc">Neutral placeholder used when a cultural record has no trustworthy photograph.</desc>
+  <rect width="960" height="640" fill="#f3efe6"/>
+  <rect x="330" y="170" width="300" height="210" rx="12" fill="none" stroke="#8a8070" stroke-width="3"/>
+  <circle cx="410" cy="240" r="22" fill="none" stroke="#8a8070" stroke-width="3"/>
+  <path d="M360 340l70-58 48 40 52-46 70 64" fill="none" stroke="#8a8070" stroke-width="3"/>
+  <text x="480" y="470" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#5c564c">No verified image yet</text>
+  <text x="480" y="512" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#8a8070">ART-LENS does not invent cultural photographs</text>
+</svg>
