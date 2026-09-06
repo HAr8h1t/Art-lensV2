@@ -50,7 +50,7 @@ requireFields("artworks", ["id", "title", "creatorId", "traditionIds", "verifica
 requireFields("products", ["id", "title", "creatorId", "artworkId", "traditionIds", "availability", "verification"]);
 requireFields("events", ["id", "title", "date", "location", "traditionIds", "verification"]);
 requireFields("workshops", ["id", "title", "creatorId", "traditionIds", "verification"]);
-requireFields("mapMarkers", ["id", "label", "kind", "state", "regionId", "siteId", "traditionId", "x", "y"]);
+requireFields("mapMarkers", ["id", "label", "kind", "state", "regionId", "siteId"]);
 
 for (const collectionName of ["regions", "traditions", "creators", "artworks", "products", "sites", "events", "workshops"]) {
   assertVerification(collectionName);

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+  <title id="title">Demo profile  no photograph</title>
+  <desc id="desc">Neutral placeholder used when a creator has no verified photograph.</desc>
+  <rect width="960" height="640" fill="#e8eee9"/>
+  <circle cx="480" cy="268" r="86" fill="#c5d0c8"/>
+  <path d="M312 470c18-78 86-122 168-122s150 44 168 122" fill="#c5d0c8"/>
+  <text x="480" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#3d4a43">Demo profile  no photograph</text>
+</svg>
